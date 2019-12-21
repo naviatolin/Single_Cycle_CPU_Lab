@@ -25,6 +25,12 @@ module memory
 
     // 16KiB memory, organized as 4096 element array of 32-bit words
     reg [31:0] mem [4095:0];
+
+    // initial begin
+    //     // $display("Loading Memory");
+    //     $readmemb("programmemory.mem", mem);
+    // end
+
     // Alternative: 16KiB memory, organized as 16384 element array of bytes
     //   This is closer to the physical implementation but makes the Verilog
     //   messier since you need to access multiple bytes at once.
