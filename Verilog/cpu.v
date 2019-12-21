@@ -81,6 +81,7 @@ module CPU(
         .ADDI_Signal(ADDI_Signal),
         .XORI_Signal(XORI_Signal), .BNE_Signal(BNE_Signal),
         .BEQ_Signal(BEQ_Signal),
+        .SW_Signal(SW_Signal),
         .LW_Signal(LW_Signal),
         .JAL_Signal(JAL_Signal),
         .J_Signal(J_Signal),
@@ -102,18 +103,29 @@ module CPU(
         .immediate(immediate)
     );
 
+    /* -------------------------------- jumpaddr -------------------------------- */
+    wire [31:0] jump_addr;
+    jumpAddress JUMPADDRESS(
+        .jump_addr(jump_addr),
+        .address(address),
+        .PC(PC)
+    );
+
     /* --------------------------------- regfile -------------------------------- */
     wire [31:0]	ReadData1;
     wire [31:0]	ReadData2;
     wire [31:0] ALU_result;
+    reg [4:0] ReadRegister2;
+    reg [4:0] WriteRegister;
+    reg [31:0] WriteData;
 
     regfile regfile(
         .ReadData1(ReadData1),
         .ReadData2(ReadData2),
-        .WriteData(ALU_result),
+        .WriteData(WriteData),
         .ReadRegister1(rs),
-        .ReadRegister2(rt),
-        .WriteRegister(rd),
+        .ReadRegister2(ReadRegister2),
+        .WriteRegister(WriteRegister),
         .RegWrite(wr_en_reg),
         .Clk(clk)
     );
@@ -127,10 +139,23 @@ module CPU(
         .command(ALU_Signal)
     );
 
-    // 
+    /* -------------------------------------------------------------------------- */
+    /*                          Setting All The Muxes Up                          */
+    /* -------------------------------------------------------------------------- */
+
+    // deciding which registers to read and write from
     always @* begin
+        if (ADDI_Signal == 1 | XORI_Signal == 1 | LW_Signal == 1) begin
+            ReadRegister2 <= rd;
+            WriteRegister <= rt;
+        end
+        else begin
+            ReadRegister2 <= rt;
+            WriteRegister <= rd;
+        end
+
     end
-    
+
     // mux for choosing between signextimm and readdata2
     always @* begin 
         if (ADDI_Signal == 1 | XORI_Signal == 1) second_operand <= signextimm;
@@ -152,6 +177,42 @@ module CPU(
         else begin
             use_alternative_PC <= 1'b0;
             alternative_PC <= PC_Last;
+        end
+    end
+
+    // sw and lw functionality muxes
+    reg [31:0] memory_address;
+    always @* begin
+        if (SW_Signal == 1) begin
+            data_addr <= ReadData1 + signextimm;
+            data_in <= ReadData2;
+            wr_en_mem <= 1'b1;
+        end
+        else if (LW_Signal == 1) begin
+            data_addr <= ReadData1 + signextimm;
+            wr_en_mem <= 1'b0;
+            WriteData <= data_out;
+        end
+        else begin
+            WriteData <= ALU_result;
+        end
+    end
+
+    // muxes for j, jal, and jr
+    always @* begin
+        if (J_Signal == 1) begin
+            use_alternative_PC <= 1'b1;
+            alternative_PC <= jump_addr;
+        end
+        else if (JAL_Signal == 1) begin
+            WriteData = PC + 32'd8;
+            WriteRegister = 32'd31;
+            use_alternative_PC = 1'b1;
+            alternative_PC = jump_addr;
+        end
+        else if (JR_Signal == 1) begin
+            use_alternative_PC <= 1'b1;
+            alternative_PC <= ReadData1;
         end
     end
 endmodule

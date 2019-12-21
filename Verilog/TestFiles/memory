@@ -6,17 +6,17 @@
 :vpi_module "vhdl_sys";
 :vpi_module "v2005_math";
 :vpi_module "va_math";
-S_0x7fa3dbd00090 .scope module, "memTest" "memTest" 2 3;
+S_0x7fbafcd00090 .scope module, "memTest" "memTest" 2 3;
  .timescale 0 0;
-v0x7fa3dbd22d60_0 .var "PC", 31 0;
-v0x7fa3dbd22e30_0 .var "clk", 0 0;
-v0x7fa3dbd22ec0_0 .var "data_addr", 31 0;
-v0x7fa3dbd22f70_0 .var "data_in", 31 0;
-v0x7fa3dbd23020_0 .net "data_out", 31 0, L_0x7fa3dbd23990;  1 drivers
-v0x7fa3dbd230f0_0 .net "instruction", 31 0, L_0x7fa3dbd23590;  1 drivers
-v0x7fa3dbd231a0_0 .var "wr_en", 0 0;
-E_0x7fa3dbd0fdc0 .event negedge, v0x7fa3dbd22850_0;
-S_0x7fa3dbd04420 .scope module, "dut" "memory" 2 14, 3 12 0, S_0x7fa3dbd00090;
+v0x7fbafcd22d60_0 .var "PC", 31 0;
+v0x7fbafcd22e30_0 .var "clk", 0 0;
+v0x7fbafcd22ec0_0 .var "data_addr", 31 0;
+v0x7fbafcd22f70_0 .var "data_in", 31 0;
+v0x7fbafcd23020_0 .net "data_out", 31 0, L_0x7fbafcd23990;  1 drivers
+v0x7fbafcd230f0_0 .net "instruction", 31 0, L_0x7fbafcd23590;  1 drivers
+v0x7fbafcd231a0_0 .var "wr_en", 0 0;
+E_0x7fbafcd0fdc0 .event negedge, v0x7fbafcd22850_0;
+S_0x7fbafcd04420 .scope module, "dut" "memory" 2 14, 3 12 0, S_0x7fbafcd00090;
  .timescale 0 0;
     .port_info 0 /INPUT 32 "PC"
     .port_info 1 /OUTPUT 32 "instruction"
@@ -25,166 +25,166 @@ S_0x7fa3dbd04420 .scope module, "dut" "memory" 2 14, 3 12 0, S_0x7fa3dbd00090;
     .port_info 4 /INPUT 32 "data_addr"
     .port_info 5 /INPUT 1 "clk"
     .port_info 6 /INPUT 1 "wr_en"
-L_0x7fa3dbd23590 .functor BUFZ 32, L_0x7fa3dbd23250, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
-L_0x7fa3dbd23990 .functor BUFZ 32, L_0x7fa3dbd23680, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
-v0x7fa3dbd10150_0 .net "PC", 31 0, v0x7fa3dbd22d60_0;  1 drivers
-v0x7fa3dbd22220_0 .net *"_s0", 31 0, L_0x7fa3dbd23250;  1 drivers
-v0x7fa3dbd222d0_0 .net *"_s10", 31 0, L_0x7fa3dbd23680;  1 drivers
-v0x7fa3dbd22390_0 .net *"_s13", 11 0, L_0x7fa3dbd23720;  1 drivers
-v0x7fa3dbd22440_0 .net *"_s14", 13 0, L_0x7fa3dbd23830;  1 drivers
-L_0x7fa3d0038050 .functor BUFT 1, C4<00>, C4<0>, C4<0>, C4<0>;
-v0x7fa3dbd22530_0 .net *"_s17", 1 0, L_0x7fa3d0038050;  1 drivers
-v0x7fa3dbd225e0_0 .net *"_s3", 11 0, L_0x7fa3dbd23330;  1 drivers
-v0x7fa3dbd22690_0 .net *"_s4", 13 0, L_0x7fa3dbd23430;  1 drivers
-L_0x7fa3d0038008 .functor BUFT 1, C4<00>, C4<0>, C4<0>, C4<0>;
-v0x7fa3dbd22740_0 .net *"_s7", 1 0, L_0x7fa3d0038008;  1 drivers
-v0x7fa3dbd22850_0 .net "clk", 0 0, v0x7fa3dbd22e30_0;  1 drivers
-v0x7fa3dbd228f0_0 .net "data_addr", 31 0, v0x7fa3dbd22ec0_0;  1 drivers
-v0x7fa3dbd229a0_0 .net "data_in", 31 0, v0x7fa3dbd22f70_0;  1 drivers
-v0x7fa3dbd22a50_0 .net "data_out", 31 0, L_0x7fa3dbd23990;  alias, 1 drivers
-v0x7fa3dbd22b00_0 .net "instruction", 31 0, L_0x7fa3dbd23590;  alias, 1 drivers
-v0x7fa3dbd22bb0 .array "mem", 0 4095, 31 0;
-v0x7fa3dbd22c50_0 .net "wr_en", 0 0, v0x7fa3dbd231a0_0;  1 drivers
-E_0x7fa3dbd0e1c0 .event edge, v0x7fa3dbd10150_0;
-E_0x7fa3dbd0fb40 .event edge, v0x7fa3dbd228f0_0;
-E_0x7fa3dbd10e10 .event posedge, v0x7fa3dbd22850_0;
-L_0x7fa3dbd23250 .array/port v0x7fa3dbd22bb0, L_0x7fa3dbd23430;
-L_0x7fa3dbd23330 .part v0x7fa3dbd22d60_0, 2, 12;
-L_0x7fa3dbd23430 .concat [ 12 2 0 0], L_0x7fa3dbd23330, L_0x7fa3d0038008;
-L_0x7fa3dbd23680 .array/port v0x7fa3dbd22bb0, L_0x7fa3dbd23830;
-L_0x7fa3dbd23720 .part v0x7fa3dbd22ec0_0, 2, 12;
-L_0x7fa3dbd23830 .concat [ 12 2 0 0], L_0x7fa3dbd23720, L_0x7fa3d0038050;
-    .scope S_0x7fa3dbd04420;
+L_0x7fbafcd23590 .functor BUFZ 32, L_0x7fbafcd23250, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+L_0x7fbafcd23990 .functor BUFZ 32, L_0x7fbafcd23680, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>, C4<00000000000000000000000000000000>;
+v0x7fbafcd10150_0 .net "PC", 31 0, v0x7fbafcd22d60_0;  1 drivers
+v0x7fbafcd22220_0 .net *"_s0", 31 0, L_0x7fbafcd23250;  1 drivers
+v0x7fbafcd222d0_0 .net *"_s10", 31 0, L_0x7fbafcd23680;  1 drivers
+v0x7fbafcd22390_0 .net *"_s13", 11 0, L_0x7fbafcd23720;  1 drivers
+v0x7fbafcd22440_0 .net *"_s14", 13 0, L_0x7fbafcd23830;  1 drivers
+L_0x7fbaf0038050 .functor BUFT 1, C4<00>, C4<0>, C4<0>, C4<0>;
+v0x7fbafcd22530_0 .net *"_s17", 1 0, L_0x7fbaf0038050;  1 drivers
+v0x7fbafcd225e0_0 .net *"_s3", 11 0, L_0x7fbafcd23330;  1 drivers
+v0x7fbafcd22690_0 .net *"_s4", 13 0, L_0x7fbafcd23430;  1 drivers
+L_0x7fbaf0038008 .functor BUFT 1, C4<00>, C4<0>, C4<0>, C4<0>;
+v0x7fbafcd22740_0 .net *"_s7", 1 0, L_0x7fbaf0038008;  1 drivers
+v0x7fbafcd22850_0 .net "clk", 0 0, v0x7fbafcd22e30_0;  1 drivers
+v0x7fbafcd228f0_0 .net "data_addr", 31 0, v0x7fbafcd22ec0_0;  1 drivers
+v0x7fbafcd229a0_0 .net "data_in", 31 0, v0x7fbafcd22f70_0;  1 drivers
+v0x7fbafcd22a50_0 .net "data_out", 31 0, L_0x7fbafcd23990;  alias, 1 drivers
+v0x7fbafcd22b00_0 .net "instruction", 31 0, L_0x7fbafcd23590;  alias, 1 drivers
+v0x7fbafcd22bb0 .array "mem", 0 4095, 31 0;
+v0x7fbafcd22c50_0 .net "wr_en", 0 0, v0x7fbafcd231a0_0;  1 drivers
+E_0x7fbafcd0e1c0 .event edge, v0x7fbafcd10150_0;
+E_0x7fbafcd0fb40 .event edge, v0x7fbafcd228f0_0;
+E_0x7fbafcd10e10 .event posedge, v0x7fbafcd22850_0;
+L_0x7fbafcd23250 .array/port v0x7fbafcd22bb0, L_0x7fbafcd23430;
+L_0x7fbafcd23330 .part v0x7fbafcd22d60_0, 2, 12;
+L_0x7fbafcd23430 .concat [ 12 2 0 0], L_0x7fbafcd23330, L_0x7fbaf0038008;
+L_0x7fbafcd23680 .array/port v0x7fbafcd22bb0, L_0x7fbafcd23830;
+L_0x7fbafcd23720 .part v0x7fbafcd22ec0_0, 2, 12;
+L_0x7fbafcd23830 .concat [ 12 2 0 0], L_0x7fbafcd23720, L_0x7fbaf0038050;
+    .scope S_0x7fbafcd04420;
 T_0 ;
-    %wait E_0x7fa3dbd10e10;
-    %load/vec4 v0x7fa3dbd22c50_0;
+    %wait E_0x7fbafcd10e10;
+    %load/vec4 v0x7fbafcd22c50_0;
     %flag_set/vec4 8;
     %jmp/0xz  T_0.0, 8;
-    %load/vec4 v0x7fa3dbd229a0_0;
-    %load/vec4 v0x7fa3dbd228f0_0;
+    %load/vec4 v0x7fbafcd229a0_0;
+    %load/vec4 v0x7fbafcd228f0_0;
     %parti/s 12, 2, 3;
     %pad/u 14;
     %ix/vec4 4;
-    %store/vec4a v0x7fa3dbd22bb0, 4, 0;
+    %store/vec4a v0x7fbafcd22bb0, 4, 0;
 T_0.0 ;
     %jmp T_0;
     .thread T_0;
-    .scope S_0x7fa3dbd04420;
+    .scope S_0x7fbafcd04420;
 T_1 ;
-    %wait E_0x7fa3dbd0fb40;
-    %load/vec4 v0x7fa3dbd228f0_0;
+    %wait E_0x7fbafcd0fb40;
+    %load/vec4 v0x7fbafcd228f0_0;
     %parti/s 2, 0, 2;
     %or/r;
     %flag_set/vec4 8;
     %jmp/0xz  T_1.0, 8;
-    %vpi_call 3 60 "$display", "Warning: misaligned data_addr access, truncating: %h", v0x7fa3dbd228f0_0 {0 0 0};
+    %vpi_call 3 60 "$display", "Warning: misaligned data_addr access, truncating: %h", v0x7fbafcd228f0_0 {0 0 0};
 T_1.0 ;
-    %load/vec4 v0x7fa3dbd228f0_0;
+    %load/vec4 v0x7fbafcd228f0_0;
     %parti/s 18, 14, 5;
     %or/r;
     %flag_set/vec4 8;
     %jmp/0xz  T_1.2, 8;
-    %vpi_call 3 63 "$display", "Error: data_addr outside implemented memory range: %h", v0x7fa3dbd228f0_0 {0 0 0};
+    %vpi_call 3 63 "$display", "Error: data_addr outside implemented memory range: %h", v0x7fbafcd228f0_0 {0 0 0};
     %vpi_call 3 64 "$stop" {0 0 0};
 T_1.2 ;
     %jmp T_1;
     .thread T_1, $push;
-    .scope S_0x7fa3dbd04420;
+    .scope S_0x7fbafcd04420;
 T_2 ;
-    %wait E_0x7fa3dbd0e1c0;
-    %load/vec4 v0x7fa3dbd10150_0;
+    %wait E_0x7fbafcd0e1c0;
+    %load/vec4 v0x7fbafcd10150_0;
     %parti/s 2, 0, 2;
     %or/r;
     %flag_set/vec4 8;
     %jmp/0xz  T_2.0, 8;
-    %vpi_call 3 70 "$display", "Warning: misaligned PC access, truncating: %h", v0x7fa3dbd10150_0 {0 0 0};
+    %vpi_call 3 70 "$display", "Warning: misaligned PC access, truncating: %h", v0x7fbafcd10150_0 {0 0 0};
 T_2.0 ;
-    %load/vec4 v0x7fa3dbd10150_0;
+    %load/vec4 v0x7fbafcd10150_0;
     %parti/s 18, 14, 5;
     %or/r;
     %flag_set/vec4 8;
     %jmp/0xz  T_2.2, 8;
-    %vpi_call 3 73 "$display", "Error: PC outside implemented memory range: %h", v0x7fa3dbd10150_0 {0 0 0};
+    %vpi_call 3 73 "$display", "Error: PC outside implemented memory range: %h", v0x7fbafcd10150_0 {0 0 0};
     %vpi_call 3 74 "$stop" {0 0 0};
 T_2.2 ;
     %jmp T_2;
     .thread T_2, $push;
-    .scope S_0x7fa3dbd00090;
+    .scope S_0x7fbafcd00090;
 T_3 ;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x7fa3dbd22e30_0, 0, 1;
+    %store/vec4 v0x7fbafcd22e30_0, 0, 1;
     %end;
     .thread T_3;
-    .scope S_0x7fa3dbd00090;
+    .scope S_0x7fbafcd00090;
 T_4 ;
     %delay 1, 0;
-    %load/vec4 v0x7fa3dbd22e30_0;
+    %load/vec4 v0x7fbafcd22e30_0;
     %nor/r;
-    %store/vec4 v0x7fa3dbd22e30_0, 0, 1;
+    %store/vec4 v0x7fbafcd22e30_0, 0, 1;
     %jmp T_4;
     .thread T_4;
-    .scope S_0x7fa3dbd00090;
+    .scope S_0x7fbafcd00090;
 T_5 ;
-    %wait E_0x7fa3dbd0fdc0;
+    %wait E_0x7fbafcd0fdc0;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0x7fa3dbd22d60_0, 0, 32;
+    %store/vec4 v0x7fbafcd22d60_0, 0, 32;
     %pushi/vec4 1, 0, 32;
-    %store/vec4 v0x7fa3dbd22f70_0, 0, 32;
+    %store/vec4 v0x7fbafcd22f70_0, 0, 32;
     %pushi/vec4 8, 0, 32;
-    %store/vec4 v0x7fa3dbd22ec0_0, 0, 32;
+    %store/vec4 v0x7fbafcd22ec0_0, 0, 32;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x7fa3dbd231a0_0, 0, 1;
-    %wait E_0x7fa3dbd10e10;
+    %store/vec4 v0x7fbafcd231a0_0, 0, 1;
+    %wait E_0x7fbafcd10e10;
     %delay 1, 0;
-    %load/vec4 v0x7fa3dbd23020_0;
+    %load/vec4 v0x7fbafcd23020_0;
     %cmpi/ne 1, 0, 32;
     %jmp/0xz  T_5.0, 4;
     %vpi_call 2 31 "$display", "writing to port is not working" {0 0 0};
 T_5.0 ;
-    %wait E_0x7fa3dbd0fdc0;
+    %wait E_0x7fbafcd0fdc0;
     %pushi/vec4 8, 0, 32;
-    %store/vec4 v0x7fa3dbd22d60_0, 0, 32;
+    %store/vec4 v0x7fbafcd22d60_0, 0, 32;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0x7fa3dbd22f70_0, 0, 32;
+    %store/vec4 v0x7fbafcd22f70_0, 0, 32;
     %pushi/vec4 8, 0, 32;
-    %store/vec4 v0x7fa3dbd22ec0_0, 0, 32;
+    %store/vec4 v0x7fbafcd22ec0_0, 0, 32;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x7fa3dbd231a0_0, 0, 1;
-    %wait E_0x7fa3dbd10e10;
+    %store/vec4 v0x7fbafcd231a0_0, 0, 1;
+    %wait E_0x7fbafcd10e10;
     %delay 1, 0;
-    %load/vec4 v0x7fa3dbd230f0_0;
+    %load/vec4 v0x7fbafcd230f0_0;
     %cmpi/ne 1, 0, 32;
     %jmp/0xz  T_5.2, 4;
     %vpi_call 2 45 "$display", "reading instruction from memory is not working" {0 0 0};
 T_5.2 ;
-    %wait E_0x7fa3dbd0fdc0;
+    %wait E_0x7fbafcd0fdc0;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0x7fa3dbd22d60_0, 0, 32;
+    %store/vec4 v0x7fbafcd22d60_0, 0, 32;
     %pushi/vec4 4, 0, 32;
-    %store/vec4 v0x7fa3dbd22f70_0, 0, 32;
+    %store/vec4 v0x7fbafcd22f70_0, 0, 32;
     %pushi/vec4 12, 0, 32;
-    %store/vec4 v0x7fa3dbd22ec0_0, 0, 32;
+    %store/vec4 v0x7fbafcd22ec0_0, 0, 32;
     %pushi/vec4 1, 0, 1;
-    %store/vec4 v0x7fa3dbd231a0_0, 0, 1;
-    %wait E_0x7fa3dbd10e10;
+    %store/vec4 v0x7fbafcd231a0_0, 0, 1;
+    %wait E_0x7fbafcd10e10;
     %delay 1, 0;
-    %load/vec4 v0x7fa3dbd23020_0;
+    %load/vec4 v0x7fbafcd23020_0;
     %cmpi/ne 4, 0, 32;
     %jmp/0xz  T_5.4, 4;
     %vpi_call 2 59 "$display", "reading data from memory is not working" {0 0 0};
 T_5.4 ;
-    %wait E_0x7fa3dbd0fdc0;
+    %wait E_0x7fbafcd0fdc0;
     %pushi/vec4 12, 0, 32;
-    %store/vec4 v0x7fa3dbd22d60_0, 0, 32;
+    %store/vec4 v0x7fbafcd22d60_0, 0, 32;
     %pushi/vec4 0, 0, 32;
-    %store/vec4 v0x7fa3dbd22f70_0, 0, 32;
+    %store/vec4 v0x7fbafcd22f70_0, 0, 32;
     %pushi/vec4 4, 0, 32;
-    %store/vec4 v0x7fa3dbd22ec0_0, 0, 32;
+    %store/vec4 v0x7fbafcd22ec0_0, 0, 32;
     %pushi/vec4 0, 0, 1;
-    %store/vec4 v0x7fa3dbd231a0_0, 0, 1;
-    %wait E_0x7fa3dbd10e10;
+    %store/vec4 v0x7fbafcd231a0_0, 0, 1;
+    %wait E_0x7fbafcd10e10;
     %delay 1, 0;
-    %load/vec4 v0x7fa3dbd230f0_0;
+    %load/vec4 v0x7fbafcd230f0_0;
     %cmpi/ne 4, 0, 32;
     %jmp/0xz  T_5.6, 4;
     %vpi_call 2 73 "$display", "reading instruction from memory is not working" {0 0 0};
