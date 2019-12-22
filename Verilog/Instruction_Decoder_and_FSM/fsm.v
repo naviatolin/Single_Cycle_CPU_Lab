@@ -29,99 +29,108 @@
 `define ALU_NOR  3'd6
 `define ALU_OR   3'd7
 
+// alternate_PC Mux Stuff
+`define JR_PC_ENABLE 3'd3
+`define J_JAL_PC_ENABLE 3'd2
+`define B_PC_Enable 3'd1
+
+
 module FSM
 (
-    output reg wrenable,
+    output reg wr_en_reg,
     output reg [2:0] ALU_Signal,
-    output reg ADD_Signal,
-    output reg SUB_Signal,
-    output reg SLT_Signal,
-    output reg JR_Signal,
-    output reg ADDI_Signal,
-    output reg XORI_Signal,
-    output reg BNE_Signal,
-    output reg BEQ_Signal,
-    output reg SW_Signal,
-    output reg LW_Signal,
-    output reg JAL_Signal,
-    output reg J_Signal,
+    output reg write_from_memory_to_reg,
+    output reg write_reg_31,
+    output reg write_pc8_to_reg,
+    output reg use_alternative_PC,
+    output reg [1:0] choose_alternative_PC,
+    output reg use_signextimm,
+    output reg wr_en_memory,
+    output reg write_to_rt,
     input [5:0] opcode,
     input [5:0] funct
     
 );
     always @(opcode or funct) begin
-        wrenable <= 1'b0;
-        ALU_Signal <= 1'd0;
-        ADD_Signal <= 1'b0;
-        SUB_Signal <= 1'b0;
-        SLT_Signal <= 1'b0;
-        JR_Signal <= 1'b0;
-        ADDI_Signal <= 1'b0;
-        XORI_Signal <= 1'b0;
-        BNE_Signal <= 1'b0;
-        BEQ_Signal <= 1'b0;
-        SW_Signal <= 1'b0;
-        LW_Signal <= 1'b0;
-        JAL_Signal <= 1'b0;
-        J_Signal <= 1'b0;
+        wr_en_reg <= 1'b0;
+        ALU_Signal <= 3'b0;
+        write_from_memory_to_reg <= 1'b0;
+        write_reg_31 <= 1'b0;
+        write_pc8_to_reg <= 1'b0;
+        use_alternative_PC <= 1'b0;
+        choose_alternative_PC <= 2'b0;
+        use_signextimm <= 1'b0;
+        wr_en_memory <= 1'b0;
+        write_to_rt <= 1'b0;
 
-        
-        if (opcode == `R_TYPE) begin
-            if (funct == `ADD) begin
-                wrenable <= 1'b1;
+        case(opcode)
+            `R_TYPE: begin
+                case(funct)
+                    `ADD: begin
+                        wr_en_reg <= 1'b1;
+                        ALU_Signal <= `ALU_ADD;
+                    end
+                    `SUB: begin
+                        wr_en_reg <= 1'b1;
+                        ALU_Signal <= `ALU_SUB;
+                    end
+                    `SLT: begin
+                        wr_en_reg <= 1'b1;
+                        ALU_Signal <= `ALU_SLT;
+                    end
+                    `JR: begin
+                        ALU_Signal <= `ALU_ADD;
+                        use_alternative_PC <= 1'b1;
+                        choose_alternative_PC <= `JR_PC_ENABLE;
+                    end
+                endcase
+            end
+            `JUMP: begin
                 ALU_Signal <= `ALU_ADD;
-                ADD_Signal <= 1'b1;
+                use_alternative_PC <= 1'b1;
+                choose_alternative_PC <= `J_JAL_PC_ENABLE;
             end
-            else if (funct == `SUB) begin
-                wrenable <= 1'b1;
-                ALU_Signal <= `ALU_SUB;
-                SUB_Signal <= 1'b1;
-            end
-            else if (funct == `SLT) begin
-                wrenable <= 1'b1;
-                ALU_Signal <= `ALU_SLT;
-                SLT_Signal <= 1'b1;
-            end
-            else if (funct == `JR) begin
+            `JAL: begin
+                wr_en_reg <= 1'b1;
                 ALU_Signal <= `ALU_ADD;
-                JR_Signal <= 1'b1;
+                write_reg_31 <= 1'b1;
+                write_pc8_to_reg <= 1'b1;
             end
-        end
-        else if (opcode == `JUMP) begin
-            ALU_Signal <= `ALU_ADD;
-            J_Signal <= 1'b1;
-        end
-        else if (opcode == `JAL) begin
-            wrenable <= 1'b1;
-            ALU_Signal <= `ALU_ADD;
-            JAL_Signal <= 1'b1;
-        end
-        else if (opcode == `ADDI) begin
-            wrenable <= 1'b1;
-            ALU_Signal <= `ALU_ADD;
-            ADDI_Signal <= 1'b1;
-        end
-        else if (opcode == `XORI) begin
-            wrenable <= 1'b1;
-            ALU_Signal <= `ALU_XOR;
-            XORI_Signal <= 1'b1;
-        end
-        else if (opcode == `BNE) begin
-            ALU_Signal <= `ALU_ADD;
-            BNE_Signal <= 1'b1;
-        end
-        else if (opcode == `BEQ) begin
-            ALU_Signal <= `ALU_ADD;
-            BEQ_Signal <= 1'b1;
-        end
-        else if (opcode == `SW) begin
-            ALU_Signal <= `ALU_ADD;
-            SW_Signal <= 1'b1;
-        end
-        else if (opcode == `LW) begin
-            wrenable <= 1'b1;
-            ALU_Signal <= `ALU_ADD;
-            LW_Signal <= 1'b1;
-        end
+            `ADDI: begin
+                wr_en_reg <= 1'b1;
+                ALU_Signal <= `ALU_ADD;
+                use_signextimm <= 1'b1;
+                write_to_rt <= 1'b1;
+            end
+            `XORI: begin
+                wr_en_reg <= 1'b1;
+                ALU_Signal <= `ALU_XOR;
+                use_signextimm <= 1'b1;
+                write_to_rt <= 1'b1;
+            end
+            `BNE: begin // set use_alternative_PC in the cpu: HIGH if if r[rs] == r[rt]
+                ALU_Signal <= `ALU_ADD;
+                choose_alternative_PC <= `B_PC_Enable;
+                use_alternative_PC <= 1'b1;
+            end
+            `BEQ: begin // set use_alternative_PC in the cpu: HIGH if r[rs] == r[rt]
+                ALU_Signal <= `ALU_ADD;
+                choose_alternative_PC <= `B_PC_Enable;
+                use_alternative_PC <= 1'b1;
+            end
+            `SW: begin
+                ALU_Signal <= `ALU_ADD;
+                wr_en_memory <= 1'b1;
+                use_signextimm <= 1'b1;
+            end
+            `LW: begin
+                wr_en_reg <= 1'b1;
+                ALU_Signal <= `ALU_ADD;
+                write_to_rt <= 1'b1;
+                write_from_memory_to_reg <= 1'b1;
+                use_signextimm <= 1'b1;
+
+            end
+        endcase
     end
 endmodule

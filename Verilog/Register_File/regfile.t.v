@@ -110,6 +110,7 @@ output reg		Clk
     dutpassed = 1;
     #10
 
+
   // Test Case 1: 
   //   Write '42' to register 2, verify with Read Ports 1 and 2
   //   (Passes because example register file is hardwired to return 42)

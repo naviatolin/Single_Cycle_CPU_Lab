@@ -40,9 +40,7 @@ input wrenable,
 input clk
 );
     always @(posedge clk) begin
-        if(wrenable) begin
-            q <= 32'b0;
-        end
+        q <= 32'b0;
     end
 endmodule
 

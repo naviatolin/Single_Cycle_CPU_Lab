@@ -8,45 +8,42 @@
 `include "Program_Counter/PC.v"
 `include "Register_File/regfile.v"
 
+`define JR_PC_ENABLE 3'd3
+`define J_JAL_PC_ENABLE 3'd2
+`define B_PC_Enable 3'd1
+
 module CPU(
-    input clk
+    input clk,
+    input reset
 );
     /* -------------------------------------------------------------------------- */
     /*         defining the wires and registers and instantiating modules         */
     /* -------------------------------------------------------------------------- */
 
-    /* ----------------------------- program counter ---------------------------- */
+    /* ------------------------------- definitions ------------------------------ */
+    // PC definitions
     wire [31:0] PC; // needs to be wired into the memory such that the instruction comes from memory
     reg [31:0] PC_Last;
     reg [31:0] alternative_PC;
-    reg use_alternative_PC;
+    wire [2:0] ALU_Signal;
+    reg really_use_alternative_PC;
 
-    PC pc(
-        .PC(PC), // is connected to PC in MEMORY
-        .PC_last(PC_Last),
-        .alternative_PC(alternative_PC),
-        .use_alternative_PC(use_alternative_PC),
-        .clk(clk)
-    );
+    // fsm definitions
+    wire [1:0] choose_alternative_PC; 
+    wire wr_en_reg;
+    wire write_from_memory_to_reg;
+    wire write_reg_31;
+    wire write_pc8_to_reg;
+    wire use_alternative_PC; // used in pc
+    wire use_signextimm;
+    wire wr_en_memory;
+    wire write_to_rt;
 
-    /* --------------------------------- memory --------------------------------- */
+    // memory definitions
     wire [31:0]  data_out;
-    reg [31:0]  data_in;
-    reg [31:0]  data_addr;
     wire [31:0] instruction;
-    reg wr_en_mem;
-
-    memory MEMORY(
-        .PC(PC), // is connected to PC in pc
-        .instruction(instruction),
-        .data_out(data_out),
-        .data_in(data_in),
-        .data_addr(data_addr),
-        .clk(clk),
-        .wr_en(wr_en_mem)
-    );
-
-    /* --------------------------- instruction decoder -------------------------- */
+    
+    // instruction decode definitions
     wire [5:0] opcode;
     wire [4:0] rs;
     wire [4:0] rt;
@@ -56,163 +53,201 @@ module CPU(
     wire [15:0] immediate;
     wire [25:0] address;
 
-    instructionDecoder INSTRUCTIONDECODER(
-        .opcode(opcode), 
-        .rs(rs),
-        .rt(rt),
-        .rd(rd),
-        .shamt(shamt),
-        .funct(funct),
-        .immediate(immediate),
-        .address(address),
-        .instruction(instruction)
-    );
-
-    /* ----------------------------------- fsm ---------------------------------- */
-    wire [2:0] ALU_Signal;
-
-    FSM FSM(
-        .wrenable(wr_en_reg),
-        .ALU_Signal(ALU_Signal),
-        .ADD_Signal(ADD_Signal),
-        .SUB_Signal(SUB_Signal),
-        .SLT_Signal(SLT_Signal),
-        .JR_Signal(JR_Signal),
-        .ADDI_Signal(ADDI_Signal),
-        .XORI_Signal(XORI_Signal), .BNE_Signal(BNE_Signal),
-        .BEQ_Signal(BEQ_Signal),
-        .SW_Signal(SW_Signal),
-        .LW_Signal(LW_Signal),
-        .JAL_Signal(JAL_Signal),
-        .J_Signal(J_Signal),
-        .opcode(opcode),
-        .funct(funct)
-    );
-
-    /* ------------------------------- signextimm ------------------------------- */
+    // creating constants definitions
     wire [31:0] signextimm;
-    signextend SIGNEXTEND(
-        .signextimm(signextimm),
-        .immediate(immediate)
-    );
-
-    /* ------------------------------- branchaddr ------------------------------- */
     wire [31:0] branch_addr;
-    branchAddress BRANCHADDRESS(
-        .branch_addr(branch_addr),
-        .immediate(immediate)
-    );
-
-    /* -------------------------------- jumpaddr -------------------------------- */
     wire [31:0] jump_addr;
-    jumpAddress JUMPADDRESS(
-        .jump_addr(jump_addr),
-        .address(address),
-        .PC(PC)
-    );
 
-    /* --------------------------------- regfile -------------------------------- */
+    // alu definitions
+    reg [31:0] second_register;
     wire [31:0]	ReadData1;
-    wire [31:0]	ReadData2;
     wire [31:0] ALU_result;
+    
+    // regfile definitions
+    wire [31:0]	ReadData2;
     reg [4:0] ReadRegister2;
     reg [4:0] WriteRegister;
     reg [31:0] WriteData;
 
-    regfile regfile(
-        .ReadData1(ReadData1),
-        .ReadData2(ReadData2),
-        .WriteData(WriteData),
-        .ReadRegister1(rs),
-        .ReadRegister2(ReadRegister2),
-        .WriteRegister(WriteRegister),
-        .RegWrite(wr_en_reg),
-        .Clk(clk)
+    // intermediate definitions
+    reg [31:0] pc8_or_alu;
+
+    /* ----------------------------- program counter ---------------------------- */
+
+    PC pc(
+        .PC(PC), // is connected to PC in MEMORY
+        .PC_last(PC_Last), // connected to PC
+        .alternative_PC(alternative_PC), // connected to MUX below
+        .use_alternative_PC(really_use_alternative_PC), // connected in mux below
+        .clk(clk), // no need to be connected
+        .reset(reset) // no need to be connected
+    );
+
+    /* --------------------------------- memory --------------------------------- */
+
+    memory MEMORY(
+        .PC(PC), // is connected to PC in pc
+        .instruction(instruction), // connected to instruction decoder
+        .data_out(data_out), // connected to mux
+        .data_in(ReadData2), // connected to regfile
+        .data_addr(ALU_result), // connected to ALU
+        .clk(clk), // no need to be connected
+        .wr_en(wr_en_memory) // connected to fsm
+    );
+
+    /* --------------------------- instruction decoder -------------------------- */
+
+    instructionDecoder INSTRUCTIONDECODER(
+        .opcode(opcode), // connected to fsm
+        .rs(rs), // connected to regfile & mux
+        .rt(rt), // connected to mux
+        .rd(rd), // connected to mux
+        .shamt(shamt), // no need to be connected
+        .funct(funct), // connected to fsm
+        .immediate(immediate), // connected to signextimm and branchaddr
+        .address(address), // connected to jump addr
+        .instruction(instruction) // connected to memory
+    );
+
+    /* ----------------------------------- fsm ---------------------------------- */
+    FSM FSM(
+        .wr_en_reg(wr_en_reg), // connected to regfile
+        .ALU_Signal(ALU_Signal), // connected to ALU
+        .write_from_memory_to_reg(write_from_memory_to_reg), // used as control signal in mux
+        .write_reg_31(write_reg_31), // used as control signal in mux
+        .write_pc8_to_reg(write_pc8_to_reg), // used as control signal in mux
+        .use_alternative_PC(use_alternative_PC), // used to set really_use_alternative_PC
+        .choose_alternative_PC(choose_alternative_PC), // used in case switch
+        .use_signextimm(use_signextimm), // used in signextimm mux
+        .wr_en_memory(wr_en_memory), // connected to memory
+        .write_to_rt(write_to_rt), // used in muxes 
+        .opcode(opcode), // connected to instruction decoder
+        .funct(funct) // connected to instruction decoder
     );
 
     /* ----------------------------------- alu ---------------------------------- */
-    reg [31:0] second_operand;
     ALU ALU(
-        .result(ALU_result),
-        .operandA(ReadData1),
-        .operandB(second_operand),
-        .command(ALU_Signal)
+        .result(ALU_result), // connected to memory and mux
+        .operandA(ReadData1), // connected to regfile
+        .operandB(second_register), // connected to mux
+        .command(ALU_Signal) // connected to fsm
+    );
+
+    /* --------------------------------- regfile -------------------------------- */
+    regfile regfile(
+        .ReadData1(ReadData1), // connected to case switch and alu
+        .ReadData2(ReadData2), // connected to mux
+        .WriteData(WriteData), // connected to muxes
+        .ReadRegister1(rs), // connected to instruction decoder
+        .ReadRegister2(ReadRegister2), // connected to muxes
+        .WriteRegister(WriteRegister), // connected to muxes
+        .RegWrite(wr_en_reg), // connected to fsm
+        .Clk(clk) // no need to be connected
+    );
+
+    /* ------------------------------- signextimm ------------------------------- */
+    signextend SIGNEXTEND(
+        .signextimm(signextimm), // connected to mux
+        .immediate(immediate) // connected to instruction decoder
+    );
+
+    /* ------------------------------- branchaddr ------------------------------- */
+    branchAddress BRANCHADDRESS(
+        .branch_addr(branch_addr), // connected to case statement
+        .immediate(immediate) // connected to intruction decoder
+    );
+
+    /* -------------------------------- jumpaddr -------------------------------- */
+    jumpAddress JUMPADDRESS(
+        .jump_addr(jump_addr), // connected to case statement
+        .address(address), // connected to instruction decoder
+        .PC(PC) // connected to PC
     );
 
     /* -------------------------------------------------------------------------- */
     /*                          Setting All The Muxes Up                          */
     /* -------------------------------------------------------------------------- */
-
     // deciding which registers to read and write from
-    always @* begin
-        if (ADDI_Signal == 1 | XORI_Signal == 1 | LW_Signal == 1) begin
-            ReadRegister2 <= rd;
-            WriteRegister <= rt;
+    always @(*) begin
+        PC_Last = PC;
+    end
+    // "write pc8 to reg" mux and "load word data?" mux
+    always @(posedge clk, negedge clk, write_pc8_to_reg, ALU_result) begin
+        if (write_pc8_to_reg == 1) begin
+            pc8_or_alu <= PC + 32'd8;
         end
         else begin
-            ReadRegister2 <= rt;
-            WriteRegister <= rd;
-        end
-
-    end
-
-    // mux for choosing between signextimm and readdata2
-    always @* begin 
-        if (ADDI_Signal == 1 | XORI_Signal == 1) second_operand <= signextimm;
-        else second_operand <= ReadData2;
-    end
-
-    // mux for replacing the PC if necessary
-    always @* begin
-        if (BEQ_Signal == 1 | BNE_Signal == 1) begin
-            if (ReadData1 == ReadData2) begin
-                alternative_PC <= PC_Last + 32'd4 + branch_addr;
-                use_alternative_PC <= 1'b1;
-            end
-            else begin
-                alternative_PC <= PC_Last;
-                use_alternative_PC <= 1'b0;
-            end
-        end
-        else begin
-            use_alternative_PC <= 1'b0;
-            alternative_PC <= PC_Last;
+            pc8_or_alu <= ALU_result;
         end
     end
 
-    // sw and lw functionality muxes
-    reg [31:0] memory_address;
-    always @* begin
-        if (SW_Signal == 1) begin
-            data_addr <= ReadData1 + signextimm;
-            data_in <= ReadData2;
-            wr_en_mem <= 1'b1;
-        end
-        else if (LW_Signal == 1) begin
-            data_addr <= ReadData1 + signextimm;
-            wr_en_mem <= 1'b0;
+    always @(posedge clk, negedge clk, write_from_memory_to_reg, data_out, pc8_or_alu) begin
+        if (write_from_memory_to_reg) begin
             WriteData <= data_out;
         end
         else begin
-            WriteData <= ALU_result;
+            WriteData <= pc8_or_alu;
         end
     end
 
-    // muxes for j, jal, and jr
-    always @* begin
-        if (J_Signal == 1) begin
-            use_alternative_PC <= 1'b1;
-            alternative_PC <= jump_addr;
+    // "Rs again [1] or Rt [0] for read register 2" mux and "Write to Rt [1] or Rd [0]?" combined mux
+    // , write_to_rt, rs, write_reg_31, rt, rd
+    always @(posedge clk, negedge clk) begin
+        if (write_to_rt) begin
+            ReadRegister2 <= rs;
+            if (write_reg_31 == 1) begin
+                WriteRegister <= 32'd31;
+            end
+            else begin
+                WriteRegister <= rt;
+            end
         end
-        else if (JAL_Signal == 1) begin
-            WriteData = PC + 32'd8;
-            WriteRegister = 32'd31;
-            use_alternative_PC = 1'b1;
-            alternative_PC = jump_addr;
+        else begin
+            ReadRegister2 <= rt;
+            if (write_reg_31 == 1) begin
+                WriteRegister <= 32'd31;
+            end
+            else WriteRegister <= rd;
         end
-        else if (JR_Signal == 1) begin
-            use_alternative_PC <= 1'b1;
-            alternative_PC <= ReadData1;
+    end
+
+    // signextimm mux
+    always @(posedge clk, negedge clk, use_signextimm, signextimm, ReadData2) begin
+        if (use_signextimm == 1) begin
+            second_register <= signextimm;
         end
+        else begin
+            second_register <= ReadData2;
+        end
+    end
+
+    // choose alternate PC mux
+    always @(posedge clk, negedge clk, choose_alternative_PC, ReadData1, use_alternative_PC, jump_addr, branch_addr) begin
+        case(choose_alternative_PC)
+            `JR_PC_ENABLE: begin
+                alternative_PC <= ReadData1;
+                really_use_alternative_PC <= use_alternative_PC;
+            end
+
+            `J_JAL_PC_ENABLE: begin
+                alternative_PC <= jump_addr;
+                really_use_alternative_PC <= use_alternative_PC;
+            end
+
+            `B_PC_Enable: begin
+                if (ReadData1 == ReadData2) begin
+                    alternative_PC <= PC + 32'd4 + branch_addr;
+                    really_use_alternative_PC <= use_alternative_PC;
+                end
+                else begin
+                    alternative_PC <= PC + 32'd4 + branch_addr;
+                    really_use_alternative_PC <= 1'b0;
+                end
+            end
+            2'b0: begin
+                alternative_PC <= 32'b0;
+                really_use_alternative_PC <= 1'b0;
+            end
+        endcase
     end
 endmodule
