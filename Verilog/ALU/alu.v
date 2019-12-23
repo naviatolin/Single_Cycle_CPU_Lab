@@ -13,10 +13,11 @@ module ALU
     output reg [31:0]  result,
     input [31:0]   operandA,
     input [31:0]   operandB,
+    input clk,
     input [2:0]    command
 );
 
-always @* begin
+always @(negedge clk, operandA, operandB, command) begin
     if (command == `ADD) result <= operandA + operandB;
     else if (command == `SUB) result <= operandA - operandA;
     else if (command == `XOR) result <= operandA ^ operandB;

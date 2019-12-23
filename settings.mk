@@ -4,7 +4,11 @@
 
 # Assembly program (minus .asm extension)
 #PROGRAM := array_loop
-PROGRAM := addi
+PROGRAM := BEQ_BNE
+# Possible Program Options
+#PROGRAM := ALU
+#PROGRAM := Jumps_LW_SW
+#PROGEAM := BEQ_BNE
 
 # Memory image(s) to create from the assembly program
 TEXTMEMDUMP := $(PROGRAM).text.hex

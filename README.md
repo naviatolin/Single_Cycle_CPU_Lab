@@ -11,7 +11,7 @@ We strongly suggest you include a mid-point check in with course staff in your p
 
 Create a 32-bit MIPS-subset CPU that supports (at least) the following instructions:
 
-	LW, SW, J, JR, JAL, BEQ, BNE, XORI (makes everything x's idk why), ADDI (works), ADD(works), SUB(works), SLT(works)
+	LW, SW, J, JR, JAL, BEQ, BNE, XORI, ADDI, ADD, SUB, SLT
     
 Every module of Verilog you write must be **commented and tested**.  Running assembly programs only tests the system at a high level – each module needs to be unit tested on its own with a Verilog test bench. Include a master script that runs your entire test suite.
 

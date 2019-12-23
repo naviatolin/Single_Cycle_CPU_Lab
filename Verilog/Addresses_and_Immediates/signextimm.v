@@ -11,3 +11,17 @@ module signextend (
     end
 
 endmodule
+
+module zerosignextend (
+	output [31:0] zerosignextimm,
+	input [15:0] immediate
+);
+    reg [31:0] zerosignext;
+    reg [31:0] zerosignextimm;
+    
+    always @* begin
+        zerosignext <= {16'b0};
+        zerosignextimm <= {zerosignext,immediate};
+    end
+
+endmodule

@@ -36,8 +36,10 @@ module CPU(
     wire write_pc8_to_reg;
     wire use_alternative_PC; // used in pc
     wire use_signextimm;
+    wire use_zerosignextimm;
     wire wr_en_memory;
     wire write_to_rt;
+    wire branch_equal;
 
     // memory definitions
     wire [31:0]  data_out;
@@ -57,6 +59,7 @@ module CPU(
     wire [31:0] signextimm;
     wire [31:0] branch_addr;
     wire [31:0] jump_addr;
+    wire [31:0] zerosignextimm;
 
     // alu definitions
     reg [31:0] second_register;
@@ -71,6 +74,7 @@ module CPU(
 
     // intermediate definitions
     reg [31:0] pc8_or_alu;
+    reg [31:0] counter;
 
     /* ----------------------------- program counter ---------------------------- */
 
@@ -119,8 +123,10 @@ module CPU(
         .use_alternative_PC(use_alternative_PC), // used to set really_use_alternative_PC
         .choose_alternative_PC(choose_alternative_PC), // used in case switch
         .use_signextimm(use_signextimm), // used in signextimm mux
+        .use_zerosignextimm(use_zerosignextimm),
         .wr_en_memory(wr_en_memory), // connected to memory
         .write_to_rt(write_to_rt), // used in muxes 
+        .branch_equal(branch_equal),
         .opcode(opcode), // connected to instruction decoder
         .funct(funct) // connected to instruction decoder
     );
@@ -130,6 +136,7 @@ module CPU(
         .result(ALU_result), // connected to memory and mux
         .operandA(ReadData1), // connected to regfile
         .operandB(second_register), // connected to mux
+        .clk(clk),
         .command(ALU_Signal) // connected to fsm
     );
 
@@ -164,17 +171,23 @@ module CPU(
         .PC(PC) // connected to PC
     );
 
+    /* ----------------------------- zerosignextimm ----------------------------- */
+    zerosignextend ZEROSIGNEXTEND(
+        .zerosignextimm(zerosignextimm),
+        .immediate(immediate)
+    );
     /* -------------------------------------------------------------------------- */
     /*                          Setting All The Muxes Up                          */
     /* -------------------------------------------------------------------------- */
     // deciding which registers to read and write from
-    always @(*) begin
-        PC_Last = PC;
+    always @(negedge clk) begin
+        if (really_use_alternative_PC == 1'b1) PC_Last = alternative_PC;
+        else PC_Last = PC;
     end
     // "write pc8 to reg" mux and "load word data?" mux
     always @(posedge clk, negedge clk, write_pc8_to_reg, ALU_result) begin
         if (write_pc8_to_reg == 1) begin
-            pc8_or_alu <= PC + 32'd8;
+            pc8_or_alu <= PC + 32'd4;
         end
         else begin
             pc8_or_alu <= ALU_result;
@@ -192,7 +205,7 @@ module CPU(
 
     // "Rs again [1] or Rt [0] for read register 2" mux and "Write to Rt [1] or Rd [0]?" combined mux
     // , write_to_rt, rs, write_reg_31, rt, rd
-    always @(posedge clk, negedge clk) begin
+    always @(posedge clk, negedge clk, write_to_rt) begin
         if (write_to_rt) begin
             ReadRegister2 <= rs;
             if (write_reg_31 == 1) begin
@@ -212,7 +225,7 @@ module CPU(
     end
 
     // signextimm mux
-    always @(posedge clk, negedge clk, use_signextimm, signextimm, ReadData2) begin
+    always @(posedge clk, negedge clk, use_signextimm, ReadData2) begin
         if (use_signextimm == 1) begin
             second_register <= signextimm;
         end
@@ -221,28 +234,54 @@ module CPU(
         end
     end
 
+    // signextimm mux
+    always @(posedge clk, negedge clk, use_zerosignextimm, ReadData2) begin
+        if (use_zerosignextimm == 1) begin
+            second_register <= zerosignextimm;
+        end
+        else begin
+            second_register <= ReadData2;
+        end
+    end
+
     // choose alternate PC mux
-    always @(posedge clk, negedge clk, choose_alternative_PC, ReadData1, use_alternative_PC, jump_addr, branch_addr) begin
+    always @(posedge clk, negedge clk) begin
         case(choose_alternative_PC)
             `JR_PC_ENABLE: begin
                 alternative_PC <= ReadData1;
-                really_use_alternative_PC <= use_alternative_PC;
+                really_use_alternative_PC <= 1'b1;
+
             end
 
             `J_JAL_PC_ENABLE: begin
                 alternative_PC <= jump_addr;
-                really_use_alternative_PC <= use_alternative_PC;
+                really_use_alternative_PC <= 1'b1;
             end
-
             `B_PC_Enable: begin
-                if (ReadData1 == ReadData2) begin
-                    alternative_PC <= PC + 32'd4 + branch_addr;
-                    really_use_alternative_PC <= use_alternative_PC;
-                end
-                else begin
-                    alternative_PC <= PC + 32'd4 + branch_addr;
-                    really_use_alternative_PC <= 1'b0;
-                end
+                    case(branch_equal)
+                        1'b1: begin
+                            if (ALU_result == 32'b0) begin
+                                alternative_PC <= PC + branch_addr + 32'd4;
+                                PC_Last <= PC + branch_addr - 32'd4;
+                                really_use_alternative_PC <= 1'b1;
+                            end
+                            else begin
+                                alternative_PC <= PC_Last;
+                                really_use_alternative_PC <= 1'b0;
+                            end
+                        end
+                       1'b0: begin
+                            if (counter == 32'b0) begin
+                                alternative_PC <= PC_Last;
+                                really_use_alternative_PC <= 1'b0;
+                            end
+                            else if (counter != 32'b0) begin
+                                alternative_PC <= PC + branch_addr;
+                                PC_Last <= PC + branch_addr - 32'd4;
+                                really_use_alternative_PC <= 1'b1;
+                            end
+                        end
+                    endcase
             end
             2'b0: begin
                 alternative_PC <= 32'b0;
@@ -250,4 +289,9 @@ module CPU(
             end
         endcase
     end
+
+    always @(negedge clk) begin
+        counter <= ALU_result;
+    end
+              
 endmodule

@@ -1,11 +1,12 @@
 addi $s0, $zero, 5
 addi $s1, $zero, 5
-add $s2, $s0, $s1
-sub $s3, $s0, $s1
-slt $s4, $s2, $s3
-lw 
+sub $s2, $s1, $s0
+add $s3, $s1, $s0
+slt $s4, $s1, $s3
+xori $s5, $s0, 5
 
-.data 
+
+.data
 my_array:
 0x00000000	# my_array[0]
 0x11110000

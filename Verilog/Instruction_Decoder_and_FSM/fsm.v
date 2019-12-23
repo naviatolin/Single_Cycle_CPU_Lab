@@ -45,8 +45,10 @@ module FSM
     output reg use_alternative_PC,
     output reg [1:0] choose_alternative_PC,
     output reg use_signextimm,
+    output reg use_zerosignextimm,
     output reg wr_en_memory,
     output reg write_to_rt,
+    output reg branch_equal,
     input [5:0] opcode,
     input [5:0] funct
     
@@ -60,8 +62,10 @@ module FSM
         use_alternative_PC <= 1'b0;
         choose_alternative_PC <= 2'b0;
         use_signextimm <= 1'b0;
+        use_zerosignextimm <= 1'b0;
         wr_en_memory <= 1'b0;
         write_to_rt <= 1'b0;
+        branch_equal <= 1'b0;
 
         case(opcode)
             `R_TYPE: begin
@@ -95,6 +99,8 @@ module FSM
                 ALU_Signal <= `ALU_ADD;
                 write_reg_31 <= 1'b1;
                 write_pc8_to_reg <= 1'b1;
+                use_alternative_PC <= 1'b1;
+                choose_alternative_PC <= `J_JAL_PC_ENABLE;
             end
             `ADDI: begin
                 wr_en_reg <= 1'b1;
@@ -105,18 +111,21 @@ module FSM
             `XORI: begin
                 wr_en_reg <= 1'b1;
                 ALU_Signal <= `ALU_XOR;
-                use_signextimm <= 1'b1;
+                use_zerosignextimm <= 1'b1;
                 write_to_rt <= 1'b1;
             end
             `BNE: begin // set use_alternative_PC in the cpu: HIGH if if r[rs] == r[rt]
-                ALU_Signal <= `ALU_ADD;
+                ALU_Signal <= `ALU_XOR;
                 choose_alternative_PC <= `B_PC_Enable;
+                use_zerosignextimm <= 1'b1;
                 use_alternative_PC <= 1'b1;
             end
             `BEQ: begin // set use_alternative_PC in the cpu: HIGH if r[rs] == r[rt]
-                ALU_Signal <= `ALU_ADD;
+                ALU_Signal <= `ALU_XOR;
                 choose_alternative_PC <= `B_PC_Enable;
                 use_alternative_PC <= 1'b1;
+                use_zerosignextimm <= 1'b1;
+                branch_equal <= 1'b1;
             end
             `SW: begin
                 ALU_Signal <= `ALU_ADD;
