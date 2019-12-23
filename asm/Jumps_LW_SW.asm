@@ -4,7 +4,7 @@ add $s2, $s1, $s0
 
 jal jumpTo
 
-j jumpNext
+j jumpNextJ
 
 # should never reach this point
 addi $s0, $zero, 15

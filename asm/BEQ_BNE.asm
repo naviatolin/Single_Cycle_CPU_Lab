@@ -1,7 +1,7 @@
 jumpNext:
     addi $s0, $zero, 5
     addi $s1, $zero, 5
-    addi $s3, $zero, 0
+    addi $s3, $zeBEro, 0
     add $s2, $s1, $s0
 
 beq $s3, $s2, jumpNext

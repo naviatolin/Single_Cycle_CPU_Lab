@@ -4,7 +4,7 @@
 
 # Assembly program (minus .asm extension)
 #PROGRAM := array_loop
-PROGRAM := BEQ_BNE
+PROGRAM := Jumps_LW_SW
 # Possible Program Options
 #PROGRAM := ALU
 #PROGRAM := Jumps_LW_SW
