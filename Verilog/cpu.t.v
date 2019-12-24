@@ -1,12 +1,5 @@
 `include "cpu.v"
 
-// Uncomment the `define below to enable dumping waveform traces for debugging
-//`define DUMP_WAVEFORM
-
-`define ASSERT_EQ(val, exp, msg) \
-  if (val !== exp) $display("[FAIL] %s (got:0b%b expected:0b%b)", msg, val, exp);
-
-
 module cpu_test ();
 	reg clk;
 	reg reset;
